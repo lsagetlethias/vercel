@@ -52,11 +52,17 @@ if (!ts) {
   ts = requireTypescript(compiler);
 }
 
+let paths = null,
+  baseUrl = '';
 if (tsconfig) {
   try {
     const { config } = ts.readConfigFile(tsconfig, ts.sys.readFile);
     if (config?.compilerOptions?.target) {
       target = config.compilerOptions.target;
+    }
+    if (config?.compilerOptions?.paths && config?.compilerOptions?.baseUrl) {
+      paths = config.compilerOptions.paths;
+      baseUrl = config.compilerOptions.baseUrl;
     }
   } catch (err) {
     if (err.code !== 'ENOENT') {
@@ -78,6 +84,14 @@ register({
   project: tsconfig || undefined, // Resolve `tsconfig.json` from entrypoint dir
   transpileOnly: true,
 });
+
+import { register as tsConfigPathsRegister } from 'tsconfig-paths';
+if (paths && baseUrl) {
+  tsConfigPathsRegister({
+    paths,
+    baseUrl,
+  });
+}
 
 import { createServer, Server, IncomingMessage, ServerResponse } from 'http';
 import { Readable } from 'stream';
